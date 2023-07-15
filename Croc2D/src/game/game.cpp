@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include <SDL_image.h>
 
 Game::Game(bool fullscreen, int width, int height)
     : is_running(false), is_full_screen(fullscreen), window_width(width), window_height(height)
@@ -52,8 +53,14 @@ void Game::init()
     }
 }
 
+void Game::setup()
+{
+
+}
+
 void Game::run()
 {
+    setup();
     while (is_running)
     {
         process_input();
@@ -86,8 +93,18 @@ void Game::update()
 
 void Game::render()
 {
-    SDL_SetRenderDrawColor(renderer, 125, 0, 125, 1);
+    SDL_SetRenderDrawColor(renderer, 21, 21, 21, 1);
     SDL_RenderClear(renderer);
+
+    SDL_Surface* surface = IMG_Load("./assets/images/tank-tiger-right.png");
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+
+    SDL_Rect destination_rect = { 10, 10, 128, 128 };
+
+    SDL_RenderCopy(renderer, texture, NULL, &destination_rect);
+    SDL_DestroyTexture(texture);
+
     SDL_RenderPresent(renderer);
 }
 
