@@ -3,11 +3,16 @@
 
 #include <SDL.h>
 
+const int FPS = 60;
+const int MILLISECONDS_PER_FRAME = 1000 / FPS;
+
 class Game
 {
 private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
+
+	int MILISECONDS_PREVIOUS_FRAME = 0;
 
 	bool is_running;
 	bool is_full_screen;
