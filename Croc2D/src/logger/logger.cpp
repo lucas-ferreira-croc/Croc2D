@@ -6,8 +6,6 @@
 
 std::vector<LogEntry> Logger::messages;
 
-
-
 void Logger::log(const std::string& message)
 {
 	LogEntry logEntry = { 
