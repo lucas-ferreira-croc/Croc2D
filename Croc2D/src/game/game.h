@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <SDL.h>
+#include "../ecs/ecs.h"
 
 const int FPS = 60;
 const int MILLISECONDS_PER_FRAME = 1000 / FPS;
@@ -12,10 +13,12 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 
-	int MILISECONDS_PREVIOUS_FRAME = 0;
+	int milseconds_previous_frame = 0;
 
 	bool is_running;
 	bool is_full_screen;
+
+	std::unique_ptr<Registry> registry;
 public:
 	Game(bool fullscreen = true, int width = 1280, int height = 720);
 	~Game();

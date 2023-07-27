@@ -9,7 +9,7 @@ std::vector<LogEntry> Logger::messages;
 void Logger::log(const std::string& message)
 {
 	LogEntry logEntry = { 
-		LOG_INFO, 
+		LogType::LOG_INFO,
 		std::string(ANSI_COLOR_GREEN) + "LOG[ " + get_datetime() + " ] " + message
 	};
 
@@ -20,7 +20,7 @@ void Logger::log(const std::string& message)
 void Logger::warn(const std::string& warn)
 {
 	LogEntry logEntry = {
-		LOG_WARNING,
+		LogType::LOG_WARNING,
 		std::string(ANSI_COLOR_YELLOW) + "ERROR[ " + get_datetime() + " ] " + warn
 	};
 
@@ -32,7 +32,7 @@ void Logger::warn(const std::string& warn)
 void Logger::error(const std::string& error)
 {
 	LogEntry logEntry = {
-		LOG_ERROR,
+		LogType::LOG_ERROR,
 		std::string(ANSI_COLOR_RED) + "ERROR[ " + get_datetime() + " ] " + error
 	};
 

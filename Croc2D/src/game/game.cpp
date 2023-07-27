@@ -1,14 +1,20 @@
 #include "game.h"
 #include "../logger/logger.h"
+#include "../ecs/components/transform.h"
+#include "../ecs/components/rigidbody_component.h"
+#include "../ecs/components/sprite_component.h"
+
+#include "../ecs/systems/movement_system.h"
+#include "../ecs/systems/render_system.h"
+
 #include <iostream>
 
 #include <glm/glm.hpp>
 #include <SDL_image.h>
 
-#include "../ecs/ecs.h"
 
 Game::Game(bool fullscreen, int width, int height)
-    : is_running(false), is_full_screen(fullscreen), window_width(width), window_height(height)
+    : is_running(false), is_full_screen(fullscreen), window_width(width), window_height(height), registry(std::make_unique<Registry>())
 {
     Logger::log("Game constructor called");
 }
@@ -61,10 +67,18 @@ void Game::init()
 
 void Game::setup()
 {
-    //Entity tank = registry.createEntity();
-    //tank.addComponent<TransformComponent>();
-    //tank.AddComponent<BoxColliderComponent>();
-    //tank.AddComponent<SpriteComponent>("./assets/image/tank.png");
+    registry->add_system<MovementSystem>();
+    registry->add_system<RenderSystem>();
+
+    Entity tank = registry->create_entity();
+    tank.add_component<TransformComponent>(glm::vec2(10.0f, 30.0f), glm::vec2(1.0f, 1.0f), 0.0f);
+    tank.add_component<RigidBodyComponent>(glm::vec2(50.0f, 20.0f));
+    tank.add_component<SpriteComponent>(10, 10);
+
+    Entity truck = registry->create_entity();
+    truck.add_component<TransformComponent>(glm::vec2(50.0f, 10.0f), glm::vec2(1.0f, 1.0f), 0.0f);
+    truck.add_component<RigidBodyComponent>(glm::vec2(0.0f, 50.0f));
+    truck.add_component<SpriteComponent>(10, 50);
 }
 
 void Game::run()
@@ -99,25 +113,29 @@ void Game::process_input()
 void Game::update()
 {
     // Delay and frame cap
-    int time_to_wait = MILLISECONDS_PER_FRAME - (SDL_GetTicks() - MILISECONDS_PREVIOUS_FRAME);
+    int time_to_wait = MILLISECONDS_PER_FRAME - (SDL_GetTicks() - milseconds_previous_frame);
     if(time_to_wait > 0 && time_to_wait <= MILLISECONDS_PER_FRAME)
     {
         SDL_Delay(time_to_wait);
     }
     
-    double delta_time = (SDL_GetTicks() - MILISECONDS_PREVIOUS_FRAME) / 1000.0f;
-    MILISECONDS_PREVIOUS_FRAME = SDL_GetTicks();
+    double delta_time = (SDL_GetTicks() - milseconds_previous_frame) / 1000.0f;
+    milseconds_previous_frame = SDL_GetTicks();
 
     
     //MovementSystem.Update();
     //CollisionSystem.Update();
+    registry->get_system<MovementSystem>().update(delta_time);
 
+    registry->update();
 }
 
 void Game::render()
 {
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 1);
     SDL_RenderClear(renderer);
+
+    registry->get_system<RenderSystem>().update(renderer);
 
     SDL_RenderPresent(renderer);
 }
