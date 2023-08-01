@@ -4,8 +4,11 @@
 #include "../ecs/components/transform.h"
 #include "../ecs/components/rigidbody_component.h"
 #include "../ecs/components/sprite_component.h"
+#include "../ecs/components/animation_component.h"
+
 #include "../ecs/systems/movement_system.h"
 #include "../ecs/systems/render_system.h"
+#include "../ecs/systems/animation_system.h"
 
 
 #include <iostream>
@@ -71,13 +74,20 @@ void Game::init()
 
 void Game::load_level(int level)
 {
+    //Add systems
+
     registry->add_system<MovementSystem>();
     registry->add_system<RenderSystem>();
-
+    registry->add_system<AnimationSystem>();
+    //Add assets
     asset_store->add_texture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
     asset_store->add_texture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
+    asset_store->add_texture(renderer, "chopper-image", "./assets/images/chopper.png");
+    asset_store->add_texture(renderer, "radar-image", "./assets/images/radar.png");
     asset_store->add_texture(renderer, "jungle-map", "./assets/tilemaps/jungle.png");
 
+
+    // load map
     int tile_size = 32;
     int tile_scale = 2.0;
     int map_num_cols = 25;
@@ -104,6 +114,17 @@ void Game::load_level(int level)
     }
     map_file.close();
     
+    // add entities
+    Entity chopper = registry->create_entity();
+    chopper.add_component<TransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(3.0f, 3.0f), 0.0f);
+    chopper.add_component<RigidBodyComponent>(glm::vec2(100.0f, 0.0f));
+    chopper.add_component<SpriteComponent>("chopper-image", 32, 32, 1);
+    chopper.add_component<AnimationComponent>(2, 15, true);
+
+    Entity radar = registry->create_entity();
+    radar.add_component<TransformComponent>(glm::vec2(window_width - 140, 10.0f), glm::vec2(2.0f, 2.0f), 0.0f);
+    radar.add_component<SpriteComponent>("radar-image", 64, 64, 2);
+    radar.add_component<AnimationComponent>(8, 5, true);
 
     Entity tank = registry->create_entity();
     tank.add_component<TransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(3.0f, 3.0f), 45.0f);
@@ -167,7 +188,7 @@ void Game::update()
     //MovementSystem.Update();
     //CollisionSystem.Update();
     registry->get_system<MovementSystem>().update(delta_time);
-
+    registry->get_system<AnimationSystem>().update();
     registry->update();
 }
 
