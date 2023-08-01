@@ -17,12 +17,13 @@ private:
 	int milseconds_previous_frame = 0;
 
 	bool is_running;
+	bool is_debug;
 	bool is_full_screen;
 
 	std::unique_ptr<Registry> registry;
 	std::unique_ptr<AssetStore> asset_store;
 public:
-	Game(bool fullscreen = true, int width = 1280, int height = 720);
+	Game(bool fullscreen = true, int width = 1280, int height = 720, bool is_debug = false);
 	~Game();
 
 	void init();
