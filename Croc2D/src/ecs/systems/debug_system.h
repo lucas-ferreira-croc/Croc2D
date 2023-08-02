@@ -32,7 +32,11 @@ public:
 				static_cast<int>(box_collider.height * transform.scale.y)
 			};
 
-			SDL_SetRenderDrawColor(renderer, 255, 0, 255, 0.0f);
+			
+			SDL_SetRenderDrawColor(renderer, 238, 210, 2, 0.0f);
+			if(box_collider.is_colliding)
+				SDL_SetRenderDrawColor(renderer, 255, 0, 0.0f, 0.0f);
+			
 			SDL_RenderDrawRect(renderer, &rect);
 		}
 	}

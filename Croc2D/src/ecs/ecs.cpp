@@ -3,6 +3,11 @@
 
 int IComponent::next_id = 0;
 
+void Entity::kill()
+{
+	registry->kill_entity(*this);
+}
+
 ////////////////////////////////////
 // Entity
 ////////////////////////////////////
@@ -44,19 +49,32 @@ const Signature& System::get_component_signature() const
 Entity Registry::create_entity()
 {
 	int entity_id;
-	entity_id = num_entities++;
+
+	if(free_ids.empty())
+	{
+		entity_id = num_entities++;
+		if(entity_id >= entity_component_signatures.size())
+		{
+			entity_component_signatures.resize(entity_id + 1);
+		}
+	}
+	else
+	{
+		entity_id = free_ids.front();
+		free_ids.pop_front();
+	}
 
 	Entity entity(entity_id);
 	entity.registry = this;
 	entities_to_be_added.insert(entity);
 	
-	if(entity_id >= entity_component_signatures.size())
-	{
-		entity_component_signatures.resize(entity_id + 1);
-	}
-
 	Logger::log("Entity created with id = " + std::to_string(entity_id));
 	return entity;
+}
+
+void Registry::kill_entity(Entity entity)
+{
+	entities_to_be_killed.insert(entity);
 }
 
 void Registry::update()
@@ -67,10 +85,15 @@ void Registry::update()
 	}
 	entities_to_be_added.clear();
 
-	/*for(Entity entity : entities_to_be_killed)
+	for(Entity entity : entities_to_be_killed)
 	{
-
-	}*/
+		remove_entity_from_systems(entity);
+		
+		free_ids.push_back(entity.get_id());
+		
+		entity_component_signatures[entity.get_id()].reset();
+	}
+	entities_to_be_killed.clear();
 }
 
 void Registry::add_entity_to_system(Entity entity)
@@ -88,5 +111,13 @@ void Registry::add_entity_to_system(Entity entity)
 		{
 			system.second->add_entity(entity);
 		}
+	}
+}
+
+void Registry::remove_entity_from_systems(Entity entity)
+{
+	for(auto system : systems)
+	{
+		system.second->remove_entity(entity);
 	}
 }

@@ -207,11 +207,11 @@ void Game::render()
     SDL_RenderClear(renderer);
 
     registry->get_system<RenderSystem>().update(renderer, asset_store);
-
-    if(is_debug)
+    if (is_debug)
     {
         registry->get_system<DebugSystem>().update(renderer);
     }
+ 
 
     SDL_RenderPresent(renderer);
 }

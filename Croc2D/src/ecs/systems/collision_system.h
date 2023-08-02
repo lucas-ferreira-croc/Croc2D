@@ -33,17 +33,22 @@ public:
 				}
 
 				auto transform_a = a.get_component<TransformComponent>();
-				auto box_collider_a = a.get_component<BoxColliderComponent>();
+				auto& box_collider_a = a.get_component<BoxColliderComponent>();
 
 
 				auto transform_b = b.get_component<TransformComponent>();
-				auto box_collider_b = b.get_component<BoxColliderComponent>();
+				auto& box_collider_b = b.get_component<BoxColliderComponent>();
 
 				if (check_AABB_collision(transform_a.position.x + box_collider_a.offset.x, transform_a.position.y + box_collider_a.offset.y, box_collider_a.height, box_collider_a.width,
 										 transform_b.position.x + box_collider_a.offset.x, transform_b.position.y + box_collider_b.offset.y, box_collider_b.height, box_collider_b.width))
 				{
 
 					Logger::log("Entity widh id = " + std::to_string(a.get_id()) + " collided with entity with id =" + std::to_string(b.get_id()));
+					box_collider_a.is_colliding = true;
+					box_collider_b.is_colliding = true;
+					
+					a.kill();
+					b.kill();
 				}
 			}
 		}

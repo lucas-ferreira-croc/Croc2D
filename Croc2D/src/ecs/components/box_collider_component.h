@@ -7,11 +7,12 @@ struct BoxColliderComponent
 {
 	int width;
 	int height;
+	bool is_colliding;
 
 	glm::vec2 offset;
 
-	BoxColliderComponent(int width = 0, int height = 0, glm::vec2 offset = glm::vec2(0.0f))
-		: width(width), height(height), offset(offset)
+	BoxColliderComponent(int width = 0, int height = 0, glm::vec2 offset = glm::vec2(0.0f), bool is_colliding = false)
+		: width(width), height(height), offset(offset), is_colliding(is_colliding)
 	{
 	}
 };
