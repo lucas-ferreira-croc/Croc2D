@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include "../ecs/ecs.h"
 #include "../asset_store/asset_store.h"
+#include "../event_bus/event_bus.h"
 
 const int FPS = 60;
 const int MILLISECONDS_PER_FRAME = 1000 / FPS;
@@ -22,6 +23,7 @@ private:
 
 	std::unique_ptr<Registry> registry;
 	std::unique_ptr<AssetStore> asset_store;
+	std::unique_ptr<EventBus> event_bus;
 public:
 	Game(bool fullscreen = true, int width = 1280, int height = 720, bool is_debug = false);
 	~Game();

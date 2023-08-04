@@ -12,6 +12,8 @@
 #include "../ecs/systems/render_system.h"
 #include "../ecs/systems/animation_system.h"
 #include "../ecs/systems/collision_system.h"
+#include "../ecs/systems/damage_system.h"
+#include "../ecs/systems/keyboard_movement_system.h"
 
 #include <iostream>
 
@@ -23,7 +25,7 @@
 
 Game::Game(bool fullscreen, int width, int height, bool is_debug)
     : is_running(false), is_full_screen(fullscreen), window_width(width), window_height(height), is_debug(is_debug),
-      registry(std::make_unique<Registry>()), asset_store(std::make_unique<AssetStore>())
+      registry(std::make_unique<Registry>()), asset_store(std::make_unique<AssetStore>()), event_bus(std::make_unique<EventBus>())
 {
     Logger::log("Game constructor called");
 }
@@ -82,6 +84,8 @@ void Game::load_level(int level)
     registry->add_system<AnimationSystem>();
     registry->add_system<CollissionSystem>();
     registry->add_system<DebugSystem>();
+    registry->add_system<DamageSystem>();
+    registry->add_system<KeyboardMovementSystem>();
 
     //Add assets
     asset_store->add_texture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
@@ -171,6 +175,8 @@ void Game::process_input()
                 is_running = false;
                 break;
             case SDL_KEYDOWN:
+                event_bus->emit_event<KeyPressedEvent>(sdl_event.key.keysym.sym);
+
                 if (sdl_event.key.keysym.sym == SDLK_ESCAPE)
                     is_running = false;
                 if (sdl_event.key.keysym.sym == SDLK_d)
@@ -192,13 +198,19 @@ void Game::update()
     double delta_time = (SDL_GetTicks() - milseconds_previous_frame) / 1000.0f;
     milseconds_previous_frame = SDL_GetTicks();
 
-    
-    //MovementSystem.Update();
-    //CollisionSystem.Update();
+    event_bus->reset();
+
+    registry->get_system<DamageSystem>().subscribe_to_events(event_bus);
+
+    registry->get_system<KeyboardMovementSystem>().subscribe_to_events(event_bus);
+
+    registry->update();
+ 
     registry->get_system<MovementSystem>().update(delta_time);
     registry->get_system<AnimationSystem>().update();
-    registry->get_system<CollissionSystem>().update();
-    registry->update();
+    registry->get_system<CollissionSystem>().update(event_bus);
+    registry->get_system<DamageSystem>().update();
+    registry->get_system<KeyboardMovementSystem>().update();
 }
 
 void Game::render()
