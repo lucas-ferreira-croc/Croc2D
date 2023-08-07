@@ -22,7 +22,7 @@ public:
 		require_component<SpriteComponent>();
 	}
 
-	void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& asset_store)
+	void update(SDL_Renderer* renderer, std::unique_ptr<AssetStore>& asset_store, SDL_Rect& camera)
 	{
 		auto renderable_entities = get_system_entities();
 		std::sort(renderable_entities.begin(), renderable_entities.end(), [](const Entity& a, const Entity& b) {
@@ -37,8 +37,8 @@ public:
 			SDL_Rect source_rectangle = sprite.src_rect;
 			
 			SDL_Rect destination_rectangle = {
-				static_cast<int>(transform.position.x),
-				static_cast<int>(transform.position.y),
+				static_cast<int>(transform.position.x - camera.x),
+				static_cast<int>(transform.position.y - camera.y),
 				static_cast<int>(sprite.width * transform.scale.x),
 				static_cast<int>(sprite.height * transform.scale.y)
 			};

@@ -21,6 +21,8 @@ private:
 	bool is_debug;
 	bool is_full_screen;
 
+	SDL_Rect camera;
+
 	std::unique_ptr<Registry> registry;
 	std::unique_ptr<AssetStore> asset_store;
 	std::unique_ptr<EventBus> event_bus;
@@ -38,8 +40,11 @@ public:
 	void destroy();
 
 
-	int window_width;
-	int window_height;	
+	static int window_width;
+	static int window_height;	
+
+	static int map_width;
+	static int map_height;
 };
 
 #endif

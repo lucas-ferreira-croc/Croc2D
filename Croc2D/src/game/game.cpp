@@ -7,6 +7,7 @@
 #include "../ecs/components/animation_component.h"
 #include "../ecs/components/box_collider_component.h"
 #include "../ecs/components/keyboard_control.h"
+#include "../ecs/components/camera_follow.h"
 
 #include "../ecs/systems/debug_system.h"
 #include "../ecs/systems/movement_system.h"
@@ -15,6 +16,7 @@
 #include "../ecs/systems/collision_system.h"
 #include "../ecs/systems/damage_system.h"
 #include "../ecs/systems/keyboard_movement_system.h"
+#include "../ecs/systems/camera_movement_system.h"
 
 #include <iostream>
 
@@ -24,10 +26,17 @@
 
 #include <fstream>
 
+int Game::window_width;
+int Game::window_height;
+int Game::map_width;
+int Game::map_height;
+
 Game::Game(bool fullscreen, int width, int height, bool is_debug)
-    : is_running(false), is_full_screen(fullscreen), window_width(width), window_height(height), is_debug(is_debug),
+    : is_running(false), is_full_screen(fullscreen), is_debug(is_debug),
       registry(std::make_unique<Registry>()), asset_store(std::make_unique<AssetStore>()), event_bus(std::make_unique<EventBus>())
 {
+    window_width = width;
+    window_height = height;
     Logger::log("Game constructor called");
 }
 
@@ -74,6 +83,11 @@ void Game::init()
     {
         SDL_SetWindowFullscreen(window, is_full_screen);
     }
+
+    camera.x = 0;
+    camera.y = 0;
+    camera.w = window_width;
+    camera.h = window_height;
 }
 
 void Game::load_level(int level)
@@ -87,6 +101,7 @@ void Game::load_level(int level)
     registry->add_system<DebugSystem>();
     registry->add_system<DamageSystem>();
     registry->add_system<KeyboardMovementSystem>();
+    registry->add_system<CameraMovementSystem>();
 
     //Add assets
     asset_store->add_texture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
@@ -122,14 +137,18 @@ void Game::load_level(int level)
         }
     }
     map_file.close();
-    
+    map_width = map_num_cols * tile_size * tile_scale;
+    map_height = map_num_rows * tile_size * tile_scale; 
+
     // add entities
     Entity chopper = registry->create_entity();
     chopper.add_component<TransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(3.0f, 3.0f), 0.0f);
     chopper.add_component<RigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     chopper.add_component<SpriteComponent>("chopper-image", 32, 32, 1);
     chopper.add_component<AnimationComponent>(2, 15, true);
-    chopper.add_component<KeyBoardControlledComponent>(glm::vec2(0, -60), glm::vec2(60, 0), glm::vec2(0, 60), glm::vec2(-60, 0));
+    chopper.add_component<KeyBoardControlledComponent>(glm::vec2(0, -80 * 3), glm::vec2(80 * 3, 0), glm::vec2(0, 80 * 3), glm::vec2(-80 * 3, 0));
+    chopper.add_component<CameraFollowComponent>();
+
 
     Entity radar = registry->create_entity();
     radar.add_component<TransformComponent>(glm::vec2(window_width - 140, 10.0f), glm::vec2(2.0f, 2.0f), 0.0f);
@@ -213,6 +232,7 @@ void Game::update()
     registry->get_system<CollissionSystem>().update(event_bus);
     registry->get_system<DamageSystem>().update();
     registry->get_system<KeyboardMovementSystem>().update();
+    registry->get_system<CameraMovementSystem>().update(camera);
 }
 
 void Game::render()
@@ -220,7 +240,7 @@ void Game::render()
     SDL_SetRenderDrawColor(renderer, 21, 21, 21, 1);
     SDL_RenderClear(renderer);
 
-    registry->get_system<RenderSystem>().update(renderer, asset_store);
+    registry->get_system<RenderSystem>().update(renderer, asset_store, camera);
     if (is_debug)
     {
         registry->get_system<DebugSystem>().update(renderer);
