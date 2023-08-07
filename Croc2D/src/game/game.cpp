@@ -6,6 +6,7 @@
 #include "../ecs/components/sprite_component.h"
 #include "../ecs/components/animation_component.h"
 #include "../ecs/components/box_collider_component.h"
+#include "../ecs/components/keyboard_control.h"
 
 #include "../ecs/systems/debug_system.h"
 #include "../ecs/systems/movement_system.h"
@@ -90,7 +91,7 @@ void Game::load_level(int level)
     //Add assets
     asset_store->add_texture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
     asset_store->add_texture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
-    asset_store->add_texture(renderer, "chopper-image", "./assets/images/chopper.png");
+    asset_store->add_texture(renderer, "chopper-image", "./assets/images/chopper-spritesheet.png");
     asset_store->add_texture(renderer, "radar-image", "./assets/images/radar.png");
     asset_store->add_texture(renderer, "jungle-map", "./assets/tilemaps/jungle.png");
 
@@ -125,9 +126,10 @@ void Game::load_level(int level)
     // add entities
     Entity chopper = registry->create_entity();
     chopper.add_component<TransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(3.0f, 3.0f), 0.0f);
-    chopper.add_component<RigidBodyComponent>(glm::vec2(100.0f, 0.0f));
+    chopper.add_component<RigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     chopper.add_component<SpriteComponent>("chopper-image", 32, 32, 1);
     chopper.add_component<AnimationComponent>(2, 15, true);
+    chopper.add_component<KeyBoardControlledComponent>(glm::vec2(0, -60), glm::vec2(60, 0), glm::vec2(0, 60), glm::vec2(-60, 0));
 
     Entity radar = registry->create_entity();
     radar.add_component<TransformComponent>(glm::vec2(window_width - 140, 10.0f), glm::vec2(2.0f, 2.0f), 0.0f);
