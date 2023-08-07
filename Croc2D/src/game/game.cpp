@@ -152,7 +152,7 @@ void Game::load_level(int level)
 
     Entity radar = registry->create_entity();
     radar.add_component<TransformComponent>(glm::vec2(window_width - 140, 10.0f), glm::vec2(2.0f, 2.0f), 0.0f);
-    radar.add_component<SpriteComponent>("radar-image", 64, 64, 2);
+    radar.add_component<SpriteComponent>("radar-image", 64, 64, 2, 0, 0, true);
     radar.add_component<AnimationComponent>(8, 5, true);
 
     Entity tank = registry->create_entity();
