@@ -21,8 +21,8 @@ public:
 
 	void on_collision(CollisionEvent& event)
 	{
-		event.a.kill();
-		event.b.kill();
+		//event.a.kill();
+		//event.b.kill();
 	}
 
 	void update()

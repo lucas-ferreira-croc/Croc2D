@@ -8,6 +8,8 @@
 #include "../ecs/components/box_collider_component.h"
 #include "../ecs/components/keyboard_control.h"
 #include "../ecs/components/camera_follow.h"
+#include "../ecs/components/projectile_emitter_component.h"
+#include "../ecs/components/health_component.h"
 
 #include "../ecs/systems/debug_system.h"
 #include "../ecs/systems/movement_system.h"
@@ -17,6 +19,8 @@
 #include "../ecs/systems/damage_system.h"
 #include "../ecs/systems/keyboard_movement_system.h"
 #include "../ecs/systems/camera_movement_system.h"
+#include "../ecs/systems/projectile_emit_system.h"
+#include "../ecs/systems/projectile_lifecycle_system.h"
 
 #include <iostream>
 
@@ -102,12 +106,15 @@ void Game::load_level(int level)
     registry->add_system<DamageSystem>();
     registry->add_system<KeyboardMovementSystem>();
     registry->add_system<CameraMovementSystem>();
+    registry->add_system<ProjectileEmitSystem>();
+    registry->add_system<ProjectileLifeCycleSystem>();
 
     //Add assets
     asset_store->add_texture(renderer, "tank-image", "./assets/images/tank-panther-right.png");
     asset_store->add_texture(renderer, "truck-image", "./assets/images/truck-ford-right.png");
     asset_store->add_texture(renderer, "chopper-image", "./assets/images/chopper-spritesheet.png");
     asset_store->add_texture(renderer, "radar-image", "./assets/images/radar.png");
+    asset_store->add_texture(renderer, "bullet-image", "./assets/images/bullet.png");
     asset_store->add_texture(renderer, "jungle-map", "./assets/tilemaps/jungle.png");
 
 
@@ -148,6 +155,8 @@ void Game::load_level(int level)
     chopper.add_component<AnimationComponent>(2, 15, true);
     chopper.add_component<KeyBoardControlledComponent>(glm::vec2(0, -80 * 3), glm::vec2(80 * 3, 0), glm::vec2(0, 80 * 3), glm::vec2(-80 * 3, 0));
     chopper.add_component<CameraFollowComponent>();
+    chopper.add_component<HealthComponent>(100);
+    chopper.add_component<ProjectileEmitterComponent>(glm::vec2(200 * 3, 200 * 3), 0, 10000, 0, true);
 
 
     Entity radar = registry->create_entity();
@@ -157,15 +166,22 @@ void Game::load_level(int level)
 
     Entity tank = registry->create_entity();
     tank.add_component<TransformComponent>(glm::vec2(500.0f, 10.0f), glm::vec2(3.0f, 3.0f), 45.0f);
-    tank.add_component<RigidBodyComponent>(glm::vec2(-30.0f, 0.0f));
+    tank.add_component<RigidBodyComponent>(glm::vec2(0.1f, 0.1f));
     tank.add_component<SpriteComponent>("tank-image", 32, 32, 2, 0, 0);
     tank.add_component <BoxColliderComponent>(32, 32);
+    tank.add_component<ProjectileEmitterComponent>(glm::vec2(100, 0), 5000, 3000, 10, false);
+    tank.add_component<HealthComponent>(100);
+
 
     Entity truck = registry->create_entity();
     truck.add_component<TransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(3.0f, 3.0f), 0.0f);
-    truck.add_component<RigidBodyComponent>(glm::vec2(50.0f, 00.0f));
+    truck.add_component<RigidBodyComponent>(glm::vec2(0.1f, 0.1f));
     truck.add_component<SpriteComponent>("truck-image", 32, 32, 1);
     truck.add_component<BoxColliderComponent>(32, 32);
+    truck.add_component <ProjectileEmitterComponent>(glm::vec2(100, 100), 2000, 5000, 10, false);
+    truck.add_component<HealthComponent>(100);
+
+
 }
 
 
@@ -202,6 +218,11 @@ void Game::process_input()
                     is_running = false;
                 if (sdl_event.key.keysym.sym == SDLK_d)
                     is_debug = !is_debug;
+                if (sdl_event.key.keysym.sym == SDLK_SPACE)
+                {
+                    std::cout << "atirou" << std::endl;
+                    event_bus->emit_event<PlayerShootEvent>(registry);
+                }
                 break;
         }
     }
@@ -222,6 +243,7 @@ void Game::update()
     event_bus->reset();
 
     registry->get_system<DamageSystem>().subscribe_to_events(event_bus);
+    registry->get_system<ProjectileEmitSystem>().subscribe_to_event(event_bus);
 
     registry->get_system<KeyboardMovementSystem>().subscribe_to_events(event_bus);
 
@@ -233,6 +255,8 @@ void Game::update()
     registry->get_system<DamageSystem>().update();
     registry->get_system<KeyboardMovementSystem>().update();
     registry->get_system<CameraMovementSystem>().update(camera);
+    registry->get_system<ProjectileEmitSystem>().update(registry);
+    registry->get_system<ProjectileLifeCycleSystem>().update();
 }
 
 void Game::render()
@@ -243,7 +267,7 @@ void Game::render()
     registry->get_system<RenderSystem>().update(renderer, asset_store, camera);
     if (is_debug)
     {
-        registry->get_system<DebugSystem>().update(renderer);
+        registry->get_system<DebugSystem>().update(renderer, camera);
     }
  
 

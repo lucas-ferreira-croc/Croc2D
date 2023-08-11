@@ -282,7 +282,7 @@ template <typename TComponent>
 bool Registry::has_component(Entity entity) const
 {
 	const int component_id = Component<TComponent>::get_id();
-	const int entity_id = entity.get_id()
+	const int entity_id = entity.get_id();
 	return entity_component_signatures[entity_id].test(component_id);
 }
 

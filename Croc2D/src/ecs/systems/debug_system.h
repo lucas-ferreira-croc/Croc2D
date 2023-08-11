@@ -18,7 +18,7 @@ public:
 
 	}
 
-	void update(SDL_Renderer* renderer)
+	void update(SDL_Renderer* renderer, SDL_Rect& camera)
 	{
 		for(Entity entity : get_system_entities())
 		{
@@ -26,8 +26,8 @@ public:
 			auto box_collider = entity.get_component<BoxColliderComponent>();
 
 			SDL_Rect rect = {
-				static_cast<int>(transform.position.x),
-				static_cast<int>(transform.position.y),
+				static_cast<int>(transform.position.x + box_collider.offset.x - camera.x),
+				static_cast<int>(transform.position.y + box_collider.offset.y - camera.y),
 				static_cast<int>(box_collider.width * transform.scale.x),
 				static_cast<int>(box_collider.height * transform.scale.y)
 			};
