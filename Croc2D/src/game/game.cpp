@@ -139,6 +139,7 @@ void Game::load_level(int level)
             map_file.ignore();
 
             Entity tile = registry->create_entity();
+            tile.group("tiles");
             tile.add_component<TransformComponent>(glm::vec2(x * (tile_scale * tile_size), y * (tile_scale * tile_size)), glm::vec2(tile_scale, tile_scale), 0.0f);
             tile.add_component<SpriteComponent>("jungle-map", tile_size, tile_size, 0 ,src_rect_x, src_rect_y);
         }
@@ -149,14 +150,16 @@ void Game::load_level(int level)
 
     // add entities
     Entity chopper = registry->create_entity();
+    chopper.tag("player");
     chopper.add_component<TransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(3.0f, 3.0f), 0.0f);
+    chopper.add_component<BoxColliderComponent>(32.0f, 32.0f);
     chopper.add_component<RigidBodyComponent>(glm::vec2(0.0f, 0.0f));
     chopper.add_component<SpriteComponent>("chopper-image", 32, 32, 1);
     chopper.add_component<AnimationComponent>(2, 15, true);
     chopper.add_component<KeyBoardControlledComponent>(glm::vec2(0, -80 * 3), glm::vec2(80 * 3, 0), glm::vec2(0, 80 * 3), glm::vec2(-80 * 3, 0));
     chopper.add_component<CameraFollowComponent>();
     chopper.add_component<HealthComponent>(100);
-    chopper.add_component<ProjectileEmitterComponent>(glm::vec2(200 * 3, 200 * 3), 0, 10000, 0, true);
+    chopper.add_component<ProjectileEmitterComponent>(glm::vec2(200 * 3, 200 * 3), 0, 10000, 10, true);
 
 
     Entity radar = registry->create_entity();
@@ -165,6 +168,7 @@ void Game::load_level(int level)
     radar.add_component<AnimationComponent>(8, 5, true);
 
     Entity tank = registry->create_entity();
+    tank.group("enemies");
     tank.add_component<TransformComponent>(glm::vec2(500.0f, 10.0f), glm::vec2(3.0f, 3.0f), 45.0f);
     tank.add_component<RigidBodyComponent>(glm::vec2(0.1f, 0.1f));
     tank.add_component<SpriteComponent>("tank-image", 32, 32, 2, 0, 0);
@@ -174,6 +178,7 @@ void Game::load_level(int level)
 
 
     Entity truck = registry->create_entity();
+    truck.group("enemies");
     truck.add_component<TransformComponent>(glm::vec2(10.0f, 10.0f), glm::vec2(3.0f, 3.0f), 0.0f);
     truck.add_component<RigidBodyComponent>(glm::vec2(0.1f, 0.1f));
     truck.add_component<SpriteComponent>("truck-image", 32, 32, 1);
@@ -247,15 +252,14 @@ void Game::update()
 
     registry->get_system<KeyboardMovementSystem>().subscribe_to_events(event_bus);
 
-    registry->update();
  
+    registry->update();
+
     registry->get_system<MovementSystem>().update(delta_time);
     registry->get_system<AnimationSystem>().update();
     registry->get_system<CollissionSystem>().update(event_bus);
-    registry->get_system<DamageSystem>().update();
-    registry->get_system<KeyboardMovementSystem>().update();
-    registry->get_system<CameraMovementSystem>().update(camera);
     registry->get_system<ProjectileEmitSystem>().update(registry);
+    registry->get_system<CameraMovementSystem>().update(camera);
     registry->get_system<ProjectileLifeCycleSystem>().update();
 }
 

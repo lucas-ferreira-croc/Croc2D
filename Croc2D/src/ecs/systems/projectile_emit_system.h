@@ -32,13 +32,10 @@ public:
 
 	void on_key_pressed(PlayerShootEvent& event)
 	{
-		std::cout << "entrou" << std::endl;
 		for(auto entity : get_system_entities())
 		{
-			std::cout << "começou o for" << std::endl;
 			if (entity.has_component<CameraFollowComponent>())// && entity.has_component<CameraFollowComponent>())
 			{
-				std::cout << "entrou no if" << std::endl;
 				
 				auto& projectile_emitter = entity.get_component<ProjectileEmitterComponent>();
 				const auto transform = entity.get_component<TransformComponent>();
@@ -95,6 +92,7 @@ private:
 
 
 		Entity projectile = registry->create_entity();
+		projectile.group("projectiles");
 		projectile.add_component<TransformComponent>(projectile_position, glm::vec2(1.0f, 1.0f), 0.0f);
 		projectile.add_component<RigidBodyComponent>(projectile_velocity);
 		projectile.add_component<SpriteComponent>("bullet-image", 4, 4, 4);

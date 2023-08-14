@@ -76,6 +76,12 @@ public:
 	
 	template<typename TComponent> 
 	TComponent& get_component() const;
+
+	void tag(const std::string& tag);
+	bool has_tag(const std::string& tag) const;
+	
+	void group(const std::string& group);
+	bool belongs_to_group(const std::string& group) const;
 };
 
 template<typename TComponent, typename ...TArgs> 
@@ -190,6 +196,15 @@ private:
 	std::set<Entity> entities_to_be_killed;
 
 	std::deque<int> free_ids;
+
+	// tags & groups
+	std::unordered_map<std::string, Entity> entity_per_tag;
+	std::unordered_map<int, std::string> tag_per_entity;
+
+	std::unordered_map<std::string, std::set<Entity>> entities_per_group;
+	std::unordered_map<int, std::string> group_per_entity;
+
+
 public:
 
 	Registry() = default;
@@ -229,6 +244,18 @@ public:
 
 	void add_entity_to_system(Entity entity);
 	void remove_entity_from_systems(Entity entity);
+
+	//tagging management
+	void tag_entity(Entity entity, const std::string& tag);
+	bool entity_has_tag(Entity entity, const std::string& tag) const;
+	Entity get_entity_by_tag(const std::string& tag);
+	void remove_entity_tag(Entity entity);
+
+	void group_entity(Entity entity, const std::string& group);
+	bool entity_belongs_to_group(Entity entity, const std::string& group) const;
+	std::vector<Entity> get_entities_by_group(const std::string group);
+	void remove_entity_group(Entity entity);
+
 };
 
 
